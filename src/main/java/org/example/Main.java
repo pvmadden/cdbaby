@@ -32,10 +32,12 @@ public class Main {
     Set<String> songs = Set.of("Desert Scene", "Pour Que J'm'élance", "Driplets", "Montgomery", "Green Eyes", "Lavender", "Gremlins on VHS",
                                 "Dusty's Lament", "Dove On The Ocean", "Into The Dark", "Mirror", "Layers", "Citrus Club", "100 Days", "Days Are Getting Darker", "Candlelit", "It's Okay Relapse");
 
+    //Date since last payment
     LocalDate sinceDate = LocalDate.parse("07/11/2024", DateTimeFormatter.ofPattern("MM/dd/yyyy"));
     List<String> reportLines;
 
     try {
+      //This reads all lines from the report, if line is referencing a song from the list, add it to the list to process.
       reportLines = Files.readAllLines(report.toPath()).stream()
           .filter(s -> !s.isEmpty())
           .filter(s -> songs.contains(s.split("\t")[trackNameIndex]))
@@ -45,10 +47,10 @@ public class Main {
     }
 
     for (String line : reportLines) {
+      //For each line, see if date is after the last payment date.
       String[] lineSplit = line.split("\t");
       LocalDate date = getDateFromZeroIndex(lineSplit[reportDateIndex]);
       if(date.isAfter(sinceDate)) {
-        System.out.println(date + " is after " + sinceDate);
         total += Double.parseDouble(lineSplit[subtotalIndex]);
       }
     }
