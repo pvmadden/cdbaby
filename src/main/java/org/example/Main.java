@@ -5,37 +5,52 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
-import java.util.Iterator;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
 
 /**
- * This program calculates the total profits of
- * a single song from a CDBaby report and prints
+ * This program calculates the total profits from
+ * a list of songs from a CDBaby report and prints
  * out a given percentage of that value.
  *
  * @author Pat Madden
  */
 public class Main {
   public static void main(String[] args) {
-    List<String> lines;
-    String song = "Green Eyes";
     double total = 0;
-    double percentage = 0.05;
-    File f = new File("/Users/vmadden/development/personal/demo/src/main/resources/20221202-DDSales.txt");
+    final double percentage = 0.2;
+
+    final int trackNameIndex = 10;
+    final int subtotalIndex = 4;
+    final int reportDateIndex = 0;
+
+    File report = new File("/Users/vmadden/development/personal/cdbaby/src/main/resources/report_2024/2024DigitalDistributionDetails.txt");
+
+    Set<String> songs = Set.of("Desert Scene", "Pour Que J'm'élance", "Driplets", "Montgomery", "Green Eyes", "Lavender", "Gremlins on VHS",
+                                "Dusty's Lament", "Dove On The Ocean", "Into The Dark", "Mirror", "Layers", "Citrus Club", "100 Days", "Days Are Getting Darker", "Candlelit", "It's Okay Relapse");
+
+    LocalDate sinceDate = LocalDate.parse("07/11/2024", DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+    List<String> reportLines;
 
     try {
-      // index 10 = track name, 4 = subtotal
-      lines = Files.readAllLines(f.toPath()).stream()
+      reportLines = Files.readAllLines(report.toPath()).stream()
           .filter(s -> !s.isEmpty())
-          .filter(s -> s.split("\t")[10].equals(song))
+          .filter(s -> songs.contains(s.split("\t")[trackNameIndex]))
           .collect(Collectors.toList());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
-    for (String line : lines) {
-      total += Double.parseDouble(line.split("\t")[4]);
+    for (String line : reportLines) {
+      String[] lineSplit = line.split("\t");
+      LocalDate date = getDateFromZeroIndex(lineSplit[reportDateIndex]);
+      if(date.isAfter(sinceDate)) {
+        System.out.println(date + " is after " + sinceDate);
+        total += Double.parseDouble(lineSplit[subtotalIndex]);
+      }
     }
 
     double calculatedShare = round(total * percentage);
@@ -46,5 +61,16 @@ public class Main {
     return new BigDecimal(value)
         .setScale(2, RoundingMode.HALF_UP)
         .doubleValue();
+  }
+
+  public static LocalDate getDateFromZeroIndex(String strDate)
+  {
+    String date = strDate.split(" ")[0];
+    String[] breakdown = date.split("/");
+    int year = Integer.parseInt(breakdown[2]);
+    int month = Integer.parseInt(breakdown[0]);
+    int dayOfMonth = Integer.parseInt(breakdown[1]);
+    LocalDate localDate = LocalDate.of(year, month, dayOfMonth);
+    return localDate;
   }
 }
