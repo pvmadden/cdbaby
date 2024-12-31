@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 public class Main {
   public static void main(String[] args) {
     double total = 0;
-    final double percentage = 0.2;
+    final double percentage = .2;
 
     final int trackNameIndex = 10;
     final int subtotalIndex = 4;
